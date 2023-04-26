@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" ng-app="programsemsectionapp" ng-controller="programsemsectionctrl">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-route.min.js"></script>
+    <script src="angularapp.js"></script>
+
+    <title>Program</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <b class="navbar-brand"><a class="navbar-brand" href="/">Timetable </a> </b>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item ">
+                    <a class="nav-link" href="/programSem">Program-Semester <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/semesterSection">Semester-Section</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" href="/semesterCourse">Semester-Courses</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" href="/sectioncourseteacher">Section-Course-Teacher</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/program">Home</a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+    <center class="my-2">
+        <h4>Semester Section</h4>
+        <div class="container my-3">
+            <div class="row">
+                <div class="col-6 mx-auto">
+                    <form method="post" action="/addprogramsemsections">
+                        <div class="form-group">
+                            <label for="selectProgram">Select Program</label>
+                            <select ng-model="selectedProgram" 
+                                    id="selectedProgram"
+                                    name = "selectedProgram"
+                                    ng-options="program.programId + ':' + program.ProgramName as program.ProgramName for program in programs"
+                                    ng-change="getActiveProgramSemesters(selectedProgram)"></select>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="selectSemester">Select Semesters</label>
+                            <select ng-model="selectedSemester"
+                                    name = "selectedSemester"
+                                    id = "selectedSemester"
+                                    ng-options="sem.SemesterId + ':' + sem.SemesterTitle as sem.SemesterTitle for sem in activeprogramsemesters"></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="selectSection">Select Section</label>
+                            <select ng-model="selectedSection"
+                                    id ="selectedSection" 
+                                    name = "selectedSection"
+                                    ng-options="section.SectionId + ':' + section.SectionName as section.SectionName for section in sections"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="selectRoom">Select Room</label>
+                            <select ng-model="selectedRoom" 
+                                    id = "selectedRoom"
+                                    name = "selectedRoom"
+                                    ng-options="room.RoomId + ':' + room.RoomName as room.RoomName for room in rooms"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="selectCapacity">Select Capacity</label>
+                            <input type="number" 
+                                    ng-model="selectedCapacity" 
+                                    id = "selectedCapacity"
+                                    name = "selectedCapacity"
+                                    class="form-control" id="selectCapacity" 
+                                    min="0">
+                        </div>
+
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="active" name="active">
+                            <input type="hidden" name="active" value="no">
+                            <label class="form-check-label" for="active">Program Semster Section Status ? Active</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+
+        <div style="width:70%;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Program-Semester-Section</th>
+                        <th>Room</th>
+                        <th>Capacity</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="programsemsection in programsemsections">
+                        <td>{{programsemsection.ProgramSemesterSectionTitle}}</td>
+                        <td>{{programsemsection.RoomId}}</td>
+                        <td>{{programsemsection.ClassCapacity}}</td>
+
+                        <td>
+                            <input type="checkbox" class="form-check-input"
+                                ng-click="setStatus(programsemsection.ProgramSemesterId,programsemsection.IsActive.data)"
+                                ng-checked="programsemsection.IsActive.data==1"
+                                >
+                            <label class="form-check-label" for="isactive">Active</label>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </center>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
