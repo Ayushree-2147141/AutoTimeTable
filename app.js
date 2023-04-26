@@ -241,7 +241,8 @@ app.get('/getalltimetable', function (req, res) {
         console.log(results);
         if (error) {
             console.log(error);
-            throw error};
+            throw error
+        };
         res.send(results);
     });
 })
@@ -299,6 +300,8 @@ app.get('/getjoinedteachertimeslots', function (req, res) {
         join lecturertable on lecturertable.LecturerId = lecturerdaytimeslottable.LecturerId2
         join daytable on lecturerdaytimeslottable.DayId2 = daytable.DayId
         join timeslottable on lecturerdaytimeslottable.TimeSlotId2 = timeslottable.TimeSlotId
+        WHERE lecturertable.LecturerIsActive = 1
+        and daytable.DayIsActive = 1
         ORDER BY 
             CASE daytable.DayName
                 WHEN 'Monday' THEN 1
@@ -404,6 +407,8 @@ app.get('/getjoinedlabtimeslots', function (req, res) {
         join labtable on labtable.LabId = labdaytimeslot.LabId4
         join daytable on labdaytimeslot.DayId4 = daytable.DayId
         join timeslottable on labdaytimeslot.TimeSlotId4 = timeslottable.TimeSlotId
+        where labtable.IsActive = 1
+        and daytable.DayIsActive = 1
         ORDER BY 
             CASE daytable.DayName
                 WHEN 'Monday' THEN 1
@@ -480,12 +485,22 @@ app.post('/addProgram', function (req, res) {
     if (activestatus.includes("on"))
         active = 1;
     // console.log(ProgramName);
-    let sql = `insert into programtable (ProgramName, ProgramIsActive) values('` + ProgramName + `',` + active + `)`;
-    // console.log(sql)
-    connection.query(sql, function (err, result) {
-        if (err) throw err;
-        res.sendFile(__dirname + '/views/program.html')
-    })
+    const sql = `
+    insert into programtable (ProgramName, ProgramIsActive) values (?, ?);
+    delete from programdaytimeslottable;
+    alter table programdaytimeslottable auto_increment = 1;
+    insert into programdaytimeslottable (ProgramsId, DayId, TimeSlotId)
+    select p.ProgramId, d.DayId, t.TimeSlotId
+    from programtable as p
+    cross join daytable as d
+    cross join timeslottable as t
+    where d.DayIsActive = 1;
+  `;
+  
+  connection.query(sql, [ProgramName, active], function (err, result) {
+    if (err) throw err;
+    res.sendFile(__dirname + '/views/program.html');
+  });
 })
 
 app.post('/addprogramsem', function (req, res) {
@@ -569,7 +584,16 @@ app.post('/addprogramsemsections', function (req, res) {
         active = 1;
     var programSemesterSectionName = programName + semesterName + sectionName;
     console.log(programSemesterSectionName);
-    let sql = 'insert into programsemestersectiontable (Program_Id, ProgramSemesterId, SectionId1, ProgramSemesterSectionTitle, RoomId, IsActive, ClassCapacity) values (?, ?, ?, ?, ?, ?, ?)';
+    let sql = `insert into programsemestersectiontable (Program_Id, ProgramSemesterId, SectionId1, ProgramSemesterSectionTitle, RoomId, IsActive, ClassCapacity) values (?, ?, ?, ?, ?, ?, ?);
+                delete FROM alltimeslottable;
+                Alter table alltimeslottable auto_increment=1;
+                insert into alltimeslottable (Program_Id,ProgramSemester_Id,ProgramSemesterSection_Id,Day_Id,TimeSlot_Id,TimeSlotIsActive)
+                select pss.Program_Id, pss.ProgramSemesterId, pss.ProgramSemesterSectionId,
+                pdts.DayId, pdts.TimeSlotId, pdts.DayTimeSlotIsActive
+                from programsemestersectiontable as pss 
+                cross join programdaytimeslottable as pdts on pss.Program_Id = pdts.ProgramsId
+                where pdts.DayTimeSlotIsActive = 1 and pss.IsActive = 1;
+    `;
 
     connection.query(sql, [programId, semesterId, sectionId, programSemesterSectionName, roomId, active, selectedCapacity], function (err, results) {
         if (err) throw err;
@@ -580,33 +604,32 @@ app.post('/addprogramsemsections', function (req, res) {
 
 
 app.post('/addprogramsemseccourseteacher', function (req, res) {
-console.log(req.body);
-var programSemesterId = req.body.programSemesterId;
-var programSemesterSectionId = req.body.programSemesterSectionId;
-var programsemestercourseId = req.body.programsemestercourseId;
-var LecturerId = req.body.LecturerId;
+    console.log(req.body);
+    var programSemesterId = req.body.programSemesterId;
+    var programSemesterSectionId = req.body.programSemesterSectionId;
+    var programsemestercourseId = req.body.programsemestercourseId;
+    var LecturerId = req.body.LecturerId;
 
-// console.log('hi');
+    // console.log('hi');
 
-var roomTypeId = req.body.roomTypeId;
-let sql = '';
-if (roomTypeId == 1) {
-    sql = `insert into sectioncourselecturertable(ProgramSemesterId3, ProgramSemesterSectionId3, ProgramSemesterCourseId3, LecturerId, RoomId) values (?, ?, ?, ?, ?)`;
-}
-else 
-{
-    sql = `insert into sectioncourselecturertable(ProgramSemesterId3, ProgramSemesterSectionId3, ProgramSemesterCourseId3, LecturerId, LabId) values (?, ?, ?, ?, ?)`;
-}
+    var roomTypeId = req.body.roomTypeId;
+    let sql = '';
+    if (roomTypeId == 1) {
+        sql = `insert into sectioncourselecturertable(ProgramSemesterId3, ProgramSemesterSectionId3, ProgramSemesterCourseId3, LecturerId, RoomId) values (?, ?, ?, ?, ?)`;
+    }
+    else {
+        sql = `insert into sectioncourselecturertable(ProgramSemesterId3, ProgramSemesterSectionId3, ProgramSemesterCourseId3, LecturerId, LabId) values (?, ?, ?, ?, ?)`;
+    }
 
-connection.query(sql, [programSemesterId, programSemesterSectionId, programsemestercourseId, LecturerId, roomTypeId], function (err, results) {
-    if (err) throw err;
-    res.sendFile(__dirname + '/views/relationship/sectionCourseTeacher.html')
+    connection.query(sql, [programSemesterId, programSemesterSectionId, programsemestercourseId, LecturerId, roomTypeId], function (err, results) {
+        if (err) throw err;
+        res.sendFile(__dirname + '/views/relationship/sectionCourseTeacher.html')
+    })
+
+
 })
 
-
-})
-
-app.get('/getroomnumber/:id', function(req, res){
+app.get('/getroomnumber/:id', function (req, res) {
     var courseId = req.params.id;
     let sql = `select roomtype.RoomTypeName, roomtype.RoomTypeId
     from roomtype
@@ -630,7 +653,16 @@ app.post('/addTeacher', function (req, res) {
     if (activestatus.includes("on"))
         active = 1;
     // console.log(ProgramName);
-    let sql = `INSERT INTO lecturertable (LecturerName, LecturerIsActive, LecturerShortName) VALUES (?, ?, ?)`;
+    let sql = `INSERT INTO lecturertable (LecturerName, LecturerIsActive, LecturerShortName) VALUES (?, ?, ?);
+                delete FROM autotimetable.lecturerdaytimeslottable;
+                Alter table autotimetable.lecturerdaytimeslottable auto_increment=1; 
+                insert into autotimetable.lecturerdaytimeslottable (LecturerId2, DayId2, TimeSlotId2)
+                select LecturerId, DayId, TimeSlotId
+                from lecturertable as l
+                cross join daytable as d
+                cross join timeslottable as t
+                where d.DayIsActive=1;    
+    `;
     // console.log(sql);
     connection.query(sql, [teacherName, active, teacherShortName], function (err, results) {
         if (err) throw err;
@@ -649,7 +681,17 @@ app.post('/addLab', function (req, res) {
     if (activestatus.includes("on"))
         active = 1;
     // console.log(ProgramName);
-    let sql = `INSERT INTO labtable (LabName, IsActive) VALUES (?, ?)`;
+    let sql = `INSERT INTO labtable (LabName, IsActive) VALUES (?, ?);
+                delete FROM autotimetable.labdaytimeslot;
+                Alter table autotimetable.labdaytimeslot auto_increment=1; 
+                insert into labdaytimeslot (LabId4,LabName,DayId4,TimeSlotId4)
+                select l.LabId, l.LabName,
+                d.DayId, t.TimeSlotId 
+                from labtable as l
+                cross join daytable as d
+                cross join timeslottable as t
+                where d.DayIsActive=1;
+    `;
     // console.log(sql);
     connection.query(sql, [labName, active], function (err, results) {
         if (err) throw err;
@@ -659,10 +701,29 @@ app.post('/addLab', function (req, res) {
 
 app.post('/setStatus/:id/:s', function (req, res) {
     var stat;
+    let sql;
     if (req.params.s == 1)
+    {
+        // for making inactive
         stat = 0;
+        sql =`UPDATE programtable SET ProgramIsActive=? WHERE programId=?;
+                update autotimetable.programdaytimeslottable as pdts 
+                join Programtable as p on pdts.ProgramsId = p.ProgramId
+                set DayTimeSlotIsActive = stat 
+                where p.ProgramIsActive = stat;
+        `;
+    }
+       
     else
+    {
         stat = 1;
+        sql =`UPDATE programtable SET ProgramIsActive=? WHERE programId=?;
+                update autotimetable.programdaytimeslottable as pdts 
+                join Programtable as p on pdts.ProgramsId = p.ProgramId
+                set DayTimeSlotIsActive = stat 
+                where p.ProgramIsActive = stat;
+        `;
+    }
     connection.query('UPDATE programtable SET ProgramIsActive=? WHERE programId=?', [stat, req.params.id], (err, rows, fields) => {
         if (!err) {
             res.send(rows)
@@ -675,17 +736,38 @@ app.post('/setStatus/:id/:s', function (req, res) {
 
 // setting teacher status
 app.post('/setTeacherStatus/:id/:s', function (req, res) {
+    // console.log(id);
+    var id = req.params.id;
+    console.log(id);
     var stat;
+    let sql;
     if (req.params.s == 1)
-        stat = 0;
+    {
+       stat = 0;
+       sql = `update lecturertable set LecturerIsActive = ? where LecturerId = ?;
+       update autotimetable.lecturerdaytimeslottable as ldts 
+       join lecturertable as l on ldts.LecturerId2 = l.LecturerId
+       set ldts.LecturerIsActive = 0
+       where l.LecturerIsActive = 0;
+       `;
+    }
     else
+    {
         stat = 1;
-    connection.query('update lecturertable set LecturerIsActive = ? where LecturerId = ?', [stat, req.params.id], (err, rows, fields) => {
+        sql = `update lecturertable set LecturerIsActive = ? where LecturerId = ?;
+        update autotimetable.lecturerdaytimeslottable as ldts 
+        join lecturertable as l on ldts.LecturerId2 = l.LecturerId
+        set ldts.LecturerIsActive = 1
+        where l.LecturerIsActive = 1;
+       `;
+    }
+        
+    connection.query(sql, [stat, id], (err, rows, fields) => {
         if (!err) {
             res.send(rows)
         }
         else
-            console.log("error");
+            console.log(err);
     })
 
 })
@@ -723,11 +805,31 @@ app.post('/setRoomActiveStatus/:id/:s', function (req, res) {
 
 app.post('/setLabActiveStatus/:id/:s', function (req, res) {
     var stat;
+    let sql;
+
     if (req.params.s == 1)
+    {
         stat = 0;
+        sql = `UPDATE labtable SET IsActive=? WHERE LabId=?;
+        update autotimetable.labdaytimeslot as ldts 
+        join labtable as l on ldts.LabId4 = l.LabId
+        set LabIsActive = 0 
+        where l.IsActive = 0;
+        `;
+    }
+        
     else
+    {
         stat = 1;
-    connection.query('UPDATE labtable SET IsActive=? WHERE LabId=?', [stat, req.params.id], (err, rows, fields) => {
+        sql = `UPDATE labtable SET IsActive=? WHERE LabId=?;
+        update autotimetable.labdaytimeslot as ldts 
+        join labtable as l on ldts.LabId4 = l.LabId
+        set LabIsActive = 0 
+        where l.IsActive = 0;
+        `;
+    }
+        
+    connection.query(sql, [stat, req.params.id], (err, rows, fields) => {
         if (!err) {
             res.send(rows)
         }
@@ -738,11 +840,28 @@ app.post('/setLabActiveStatus/:id/:s', function (req, res) {
 
 app.post('/setProgramSemSectionStatus/:id/:s', function (req, res) {
     var stat;
+    let sql ;
     if (req.params.s == 1)
+    {
         stat = 0;
+        sql = `UPDATE programsemestersectiontable SET IsActive=? WHERE ProgramSemesterSectionId=?;
+        update alltimeslottable as ats
+        join programsemestersectiontable as pss on ats.ProgramSemesterSection_Id = pss.ProgramSemesterSectionId
+        set ats.TimeSlotIsActive = stat
+        where pss.IsActive = stat;
+        `;
+    }
     else
+    {
         stat = 1;
-    connection.query('UPDATE programsemestersectiontable SET IsActive=? WHERE ProgramSemesterSectionId=?', [stat, req.params.id], (err, rows, fields) => {
+        sql = `UPDATE programsemestersectiontable SET IsActive=? WHERE ProgramSemesterSectionId=?;
+        update alltimeslottable as ats
+        join programsemestersectiontable as pss on ats.ProgramSemesterSection_Id = pss.ProgramSemesterSectionId
+        set ats.TimeSlotIsActive = stat
+        where pss.IsActive = stat;
+        `;
+    }
+    connection.query(sql, [stat, req.params.id], (err, rows, fields) => {
         if (!err) {
             res.send(rows)
         }

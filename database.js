@@ -3,7 +3,8 @@ var connection = mysql.createConnection({
     host: 'localhost',
     database: 'autotimetable',
     user: 'root',
-    password: 'root'
+    password: 'root',
+    multipleStatements: true
 });
 
 module.exports = connection;

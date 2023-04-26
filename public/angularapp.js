@@ -367,6 +367,19 @@ teacherapp.controller('teacherctrl', function ($scope, $http) {
         }).success()
     }
 
+    $scope.setTeacherStatus = function (id, stat) {
+        alert("clicked")    
+        // console.log(id+'-------'+stat);
+        $http.post("http://localhost:3000/setTeacherStatus/" + id + '/' + stat)
+            .success(function (data) {
+                $http.get('http://localhost:3000/getteachers')
+                    .success(function (response) {
+                        $scope.teachers = response;
+                    })
+            })
+    }
+    
+
 })
 
 
@@ -522,7 +535,8 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
     
 
     $scope.setTeacherStatus = function (id, stat) {
-        //alert("clicked")    
+        // alert("clicked")    
+        console.log(id+'-------'+stat);
         $http.post("http://localhost:3000/setTeacherStatus/" + id + '/' + stat)
             .success(function (data) {
                 $http.get('http://localhost:3000/getassignedteachers')

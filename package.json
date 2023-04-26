@@ -1,0 +1,23 @@
+{
+  "name": "time-table",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ayushree-2147141/Time-table.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ayushree-2147141/Time-table/issues"
+  },
+  "homepage": "https://github.com/Ayushree-2147141/Time-table#readme",
+  "dependencies": {
+    "node-modules": "^1.0.1"
+  },
+  "description": ""
+}
