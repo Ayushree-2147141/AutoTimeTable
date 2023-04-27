@@ -368,7 +368,7 @@ teacherapp.controller('teacherctrl', function ($scope, $http) {
     }
 
     $scope.setTeacherStatus = function (id, stat) {
-        alert("clicked")    
+        // alert("clicked")    
         // console.log(id+'-------'+stat);
         $http.post("http://localhost:3000/setTeacherStatus/" + id + '/' + stat)
             .success(function (data) {
@@ -689,7 +689,7 @@ teachertimeslotapp.controller('teachertimeslotctrl', function ($scope, $http) {
         //alert("clicked")    
         $http.post("http://localhost:3000/setTeacherTimeSlotStatus/" + id + '/' + stat)
             .success(function (data) {
-                $http.get('http://localhost:3000/getjoinedtimeslots')
+                $http.get('http://localhost:3000/getjoinedteachertimeslots')
                     .success(function (response) {
                         $scope.joinedteachertimeslots = response;
                     })

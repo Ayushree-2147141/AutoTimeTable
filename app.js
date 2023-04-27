@@ -706,30 +706,32 @@ app.post('/setStatus/:id/:s', function (req, res) {
     {
         // for making inactive
         stat = 0;
-        sql =`UPDATE programtable SET ProgramIsActive=? WHERE programId=?;
+        sql =`
+        UPDATE programtable SET ProgramIsActive=? WHERE programId=?;
                 update autotimetable.programdaytimeslottable as pdts 
                 join Programtable as p on pdts.ProgramsId = p.ProgramId
-                set DayTimeSlotIsActive = stat 
-                where p.ProgramIsActive = stat;
+                set DayTimeSlotIsActive = 0 
+                where p.ProgramIsActive = 0;
         `;
     }
        
     else
     {
         stat = 1;
-        sql =`UPDATE programtable SET ProgramIsActive=? WHERE programId=?;
+        sql =`
+        UPDATE programtable SET ProgramIsActive=? WHERE programId=?;
                 update autotimetable.programdaytimeslottable as pdts 
                 join Programtable as p on pdts.ProgramsId = p.ProgramId
-                set DayTimeSlotIsActive = stat 
-                where p.ProgramIsActive = stat;
+                set DayTimeSlotIsActive = 1 
+                where p.ProgramIsActive = 1;
         `;
     }
-    connection.query('UPDATE programtable SET ProgramIsActive=? WHERE programId=?', [stat, req.params.id], (err, rows, fields) => {
+    connection.query(sql, [stat, req.params.id], (err, rows, fields) => {
         if (!err) {
             res.send(rows)
         }
         else
-            console.log("error");
+            console.log(err);
     })
 
 })
@@ -799,7 +801,7 @@ app.post('/setRoomActiveStatus/:id/:s', function (req, res) {
             res.send(rows)
         }
         else
-            console.log("error");
+            console.log(err);
     })
 })
 
@@ -824,8 +826,8 @@ app.post('/setLabActiveStatus/:id/:s', function (req, res) {
         sql = `UPDATE labtable SET IsActive=? WHERE LabId=?;
         update autotimetable.labdaytimeslot as ldts 
         join labtable as l on ldts.LabId4 = l.LabId
-        set LabIsActive = 0 
-        where l.IsActive = 0;
+        set LabIsActive = 1 
+        where l.IsActive = 1;
         `;
     }
         
@@ -834,7 +836,7 @@ app.post('/setLabActiveStatus/:id/:s', function (req, res) {
             res.send(rows)
         }
         else
-            console.log("error");
+            console.log(err);
     })
 })
 
@@ -866,24 +868,42 @@ app.post('/setProgramSemSectionStatus/:id/:s', function (req, res) {
             res.send(rows)
         }
         else
-            console.log("error");
+            console.log(err);
     })
 })
 
 
 app.post('/setProgramTimeSlotStatus/:id/:s', function (req, res) {
     var stat;
-    if (req.params.s == 1)
+    if (req.params.s == 1) {
         stat = 0;
+        sql = `UPDATE programdaytimeslottable SET DayTimeSlotIsActive=? WHERE ProgramDayTimeSlotId=?;
+        update autotimetable.programdaytimeslottable as pdts 
+        join Programtable as p on pdts.ProgramsId = p.ProgramId
+        set DayTimeSlotIsActive = 0 
+        where p.ProgramIsActive = 0;
+        `;
+
+    }
+
     else
+    {
         stat = 1;
-    connection.query('UPDATE programdaytimeslottable SET DayTimeSlotIsActive=? WHERE ProgramDayTimeSlotId=?', [stat, req.params.id], (err, rows, fields) => {
+        sql = `UPDATE programdaytimeslottable SET DayTimeSlotIsActive=? WHERE ProgramDayTimeSlotId=?;
+        update autotimetable.programdaytimeslottable as pdts 
+        join Programtable as p on pdts.ProgramsId = p.ProgramId
+        set DayTimeSlotIsActive = 1 
+        where p.ProgramIsActive = 1;
+        `;
+    }
+        
+    connection.query(sql, [stat, req.params.id], (err, rows, fields) => {
         if (!err) {
             res.send(rows)
         }
         else
-            console.log("error");
-    })
+            console.log(err);
+    });
 })
 
 
@@ -974,25 +994,25 @@ app.post('/addCourse', function (req, res) {
 })
 
 
-app.post('/addTeacher', function (req, res) {
-    // console.log(req.body);
-    var teacherName = req.body.teacherName;
-    var teacherShortName = req.body.teacherShortName;
-    // console.log("Id:",RoomTypeId);
-    var activestatus = req.body.active;
-    // console.log(activestatus);
-    var active = 0;
-    if (activestatus.includes("no"))
-        active = 1;
-    // console.log(active);
-    let sql = `INSERT INTO lecturertable (LecturerName, LecturerIsActive, LecturerShortName) VALUES (?, ?, ?)`;
-    console.log();
-    // console.log(sql);
-    connection.query(sql, [teacherName, active, teacherShortName], function (err, results) {
-        if (err) throw err;
-        res.sendFile(__dirname + '/views/teachers.html')
-    })
-})
+// app.post('/addTeacher', function (req, res) {
+//     // console.log(req.body);
+//     var teacherName = req.body.teacherName;
+//     var teacherShortName = req.body.teacherShortName;
+//     // console.log("Id:",RoomTypeId);
+//     var activestatus = req.body.active;
+//     // console.log(activestatus);
+//     var active = 0;
+//     if (activestatus.includes("no"))
+//         active = 1;
+//     // console.log(active);
+//     let sql = `INSERT INTO lecturertable (LecturerName, LecturerIsActive, LecturerShortName) VALUES (?, ?, ?)`;
+//     console.log();
+//     // console.log(sql);
+//     connection.query(sql, [teacherName, active, teacherShortName], function (err, results) {
+//         if (err) throw err;
+//         res.sendFile(__dirname + '/views/teachers.html')
+//     })
+// })
 
 
 app.post('/addRoom', function (req, res) {
