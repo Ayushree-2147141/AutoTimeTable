@@ -122,16 +122,17 @@
                 <tbody>
                     <tr ng-repeat="programsemsection in programsemsections">
                         <td>{{programsemsection.ProgramSemesterSectionTitle}}</td>
-                        <td>{{programsemsection.RoomId}}</td>
+                        <td>{{programsemsection.RoomName}}</td>
                         <td>{{programsemsection.ClassCapacity}}</td>
 
                         <td>
                             <input type="checkbox" class="form-check-input"
-                                ng-click="setStatus(programsemsection.ProgramSemesterId,programsemsection.IsActive.data)"
+                                ng-click="setStatus(programsemsection.ProgramSemesterSectionId,programsemsection.IsActive.data)"
                                 ng-checked="programsemsection.IsActive.data==1"
                                 >
                             <label class="form-check-label" for="isactive">Active</label>
                         </td>
+
                     </tr>
                 </tbody>
             </table>

@@ -174,41 +174,37 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
 
 
     $scope.generateAllTimeTable = async function () {
-        alert('clicked');
-
-
-        $http.get('http://localhost:3000/getalltimetable')
-            // .success(function(response){
-            //     // console.log(response)
-            //     $scope.fulltimetable = response;
-            // })
-            .success(function (response) {
-                $scope.slots = ['1', '2', '3', '4', '5', '6', '7', '8'];
-                $scope.timeslots = ['7:00-8:00', '8:00-9:00', '9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00', '13:00-14:00'];
-                $scope.MCA1A = {};
-                console.log(response);
-                for (var i = 0; i < response.length; i++) {
-                    var course = response[i];
-
-                    if (!$scope.MCA1A[course.DayName]) {
-                        $scope.MCA1A[course.DayName] = [];
-                    }
-
-                    $scope.MCA1A[course.DayName][course.TTTimeslotId - 1] = course;
+        // alert('clicked');
+    
+        try {
+            const response = await $http.get('http://localhost:3000/getalltimetable');
+            $scope.slots = ['1', '2', '3', '4', '5', '6', '7', '8'];
+            $scope.timeslots = ['7:00-8:00', '8:00-9:00', '9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00', '13:00-14:00'];
+            $scope.MCA1A = {};
+            console.log(response);
+            for (var i = 0; i < response.length; i++) {
+                var course = response[i];
+    
+                if (!$scope.MCA1A[course.DayName]) {
+                    $scope.MCA1A[course.DayName] = [];
                 }
-
-                $scope.getCourseName = function (courses, day, slot) {
-                    var course = courses[slot - 1];
-                    if (course) {
-                        return course.CourseName;
-                    } else {
-                        return '';
-                    }
-                };
-                console.log($scope.MCA1A);
-
-
-            })
+    
+                $scope.MCA1A[course.DayName][course.TTTimeslotId - 1] = course;
+            }
+    
+            $scope.getCourseName = function (courses, day, slot) {
+                var course = courses[slot - 1];
+                if (course) {
+                    return course.CourseName;
+                } else {
+                    return '';
+                }
+            };
+            console.log($scope.MCA1A);
+    
+        } catch (error) {
+            console.error(error);
+        }
     }
 
 
@@ -216,41 +212,6 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
     $scope.generateMCATimeTable = function () {
         // alert('clicked')
         $http.get('http://localhost:3000/gettimetableMCA1A')
-            // .success(function(response){
-            //     $scope.MCA1A= {};
-            //     $scope.days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
-            //     let schedule = Array(6).fill().map(() => Array(8).fill(''));
-
-
-
-
-            //     // for(var i =0; i < response.length; i++){
-            //     //     // var day = response[i].DayName;
-            //     //     var course = response[i];
-
-            //     //     if(!$scope.MCA1A[course.DayName]){
-            //     //         $scope.MCA1A[course.DayName] = []
-            //     //     }
-            //     //     $scope.MCA1A[course.DayName].push(course);
-            //     // }
-
-            //     for (var i = 0; i < response.length; i++) {
-            //         var course = response[i];
-            //         var dayName = course.DayName;
-
-            //         if (!$scope.MCA1A[dayName]) {
-            //             $scope.MCA1A[dayName] = new Array(6).fill().map(() => new Array(8).fill(''));
-            //         }
-
-            //         var rowIndex = course.TTDayId - 1;
-            //         var colIndex = course.TTTimeslotId - 1;
-            //         $scope.MCA1A[dayName][rowIndex][colIndex] = course.CourseName;
-            //     }
-
-            //     // $scope.MCA1A = response;
-
-            // })
 
             .success(function (response) {
                 $scope.slots = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
@@ -422,7 +383,9 @@ programsemsectionapp.controller('programsemsectionctrl', function ($scope, $http
         })
 
     $scope.setStatus = function (id, stat) {
-        //alert("clicked")    
+        // alert("clicked") 
+        // console.log(id);   
+        // console.log(stat);
         $http.post("http://localhost:3000/setProgramSemSectionStatus/" + id + '/' + stat)
             .success(function (data) {
                 $http.get('http://localhost:3000/getprogramsemsection')
@@ -605,6 +568,7 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
     $scope.submitProgSemCourse = function(selectedSemester,selectedSection,selectedCourse,selectedTeacher)
     {
 
+        console.log(selectedSection);
         var selectedSemesterV = selectedSemester.split(':');
         var programSemesterId = selectedSemesterV[1]
         // console.log(programSemesterId);
@@ -635,7 +599,12 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
             url: 'http://localhost:3000/addprogramsemseccourseteacher',
             headers: { 'Content-Type': 'application/json' },
             data: JSON.stringify(form)
-        })
+        }).then(function(response) {
+            // Reload the page after the data is submitted
+            $window.location.reload();
+        }).catch(function(error) {
+            console.log(error);
+        });
     }
     
 })

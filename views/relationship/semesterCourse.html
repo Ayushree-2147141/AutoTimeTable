@@ -97,14 +97,18 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Semester </th>
-                        <th>Course Name</th>
+                        <th class="col-4">Semester 
+                            <input type="text" class="form-control" ng-model="searchSemesterName" placeholder="Search Course">
+                        </th>
+                        <th class="col-5">Course Name
+                            <input type="text" class="form-control" ng-model="searchCourseName" placeholder="Search Course">
+                        </th>
                         <th>Course Hours</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="programsemcourse in programsemcourses">
-                        <td>{{programsemcourse.ProgramSemesterId1}}</td>
+                    <tr ng-repeat="programsemcourse in programsemcourses | filter : searchSemesterName | filter : searchCourseName">
+                        <td>{{programsemcourse.SemesterTitle}}</td>
                         <td>{{programsemcourse.CourseName}}</td>
                         <td>{{programsemcourse.courseHrs}}</td>
                     </tr>

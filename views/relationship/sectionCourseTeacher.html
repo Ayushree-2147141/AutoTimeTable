@@ -11,6 +11,7 @@
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-route.min.js"></script>
+    
     <script src="angularapp.js"></script>
     <title>Program</title>
 </head>
@@ -86,7 +87,7 @@
                         </div>
 
                         <div ng-show="selectedCourse">
-                            <p name="roomNumber" ng-model="roomNumber">Room Number: {{roomData.RoomTypeName}}</p>
+                            <p name="roomNumber" ng-model="roomNumber">Room Type: <span className="text-primary">{{roomData.RoomTypeName}}</span></p>
                         </div>
 
                         <!-- <input type="hidden" ng-model="roomName" name="roomNumber" /> -->

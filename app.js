@@ -214,7 +214,10 @@ app.get('/getprogramsem', function (req, res) {
 })
 
 app.get('/getprogramsemsection', function (req, res) {
-    let sql = `select * from programsemestersectiontable`;
+    let sql = `select programsemestersectiontable.ProgramSemesterSectionId , programsemestersectiontable.Program_Id , programsemestersectiontable.ProgramSemesterId , programsemestersectiontable.SectionId1 , programsemestersectiontable.ProgramSemesterSectionTitle, programsemestersectiontable.RoomId, programsemestersectiontable.IsActive, roomtable.RoomName , roomtable.RoomIsActive , programsemestersectiontable.ClassCapacity
+    from programsemestersectiontable
+    join roomtable on roomtable.RoomId = programsemestersectiontable.RoomId
+    where roomtable.RoomIsActive = 1;`;
     connection.query(sql, function (err, result) {
         if (err) throw err;
         // console.log(result);
@@ -238,7 +241,7 @@ app.get('/getalltimetable', function (req, res) {
     let sql = 'call generate_time_table()';
     // console.log(sql);
     connection.query(sql, (error, results, fields) => {
-        console.log(results);
+        // console.log(results);
         if (error) {
             console.log(error);
             throw error
@@ -369,10 +372,11 @@ app.get('/getactiveteachers', function (req, res) {
 })
 
 app.get('/getprogramsemcourses', function (req, res) {
-    let sql = `select coursetable.CourseName ,coursetable.CourseID, programsemestercoursetable.ProgramSemesterId1, programsemestercoursetable.courseHrs
+    let sql = `select coursetable.CourseName ,coursetable.CourseID, programsemestercoursetable.ProgramSemesterId1, semestertable.SemesterTitle,  programsemestercoursetable.courseHrs
                 from programsemestercoursetable 
-                join coursetable
-                on coursetable.CourseId = programsemestercoursetable.CourseId1;`;
+                join coursetable on coursetable.CourseId = programsemestercoursetable.CourseId1
+                join semestertable on semestertable.SemesterId = programsemestercoursetable.ProgramSemesterId1;
+                `;
 
     connection.query(sql, function (err, result) {
         if (err) throw err;
@@ -780,8 +784,10 @@ app.post('/setProgramSemStatus/:id/:s', function (req, res) {
         stat = 0;
     else
         stat = 1;
+    
     connection.query('UPDATE programsemestertable SET ProgramSemesterIsActive=? WHERE ProgramSemesterId=?', [stat, req.params.id], (err, rows, fields) => {
         if (!err) {
+            
             res.send(rows)
         }
         else
@@ -843,15 +849,20 @@ app.post('/setLabActiveStatus/:id/:s', function (req, res) {
 app.post('/setProgramSemSectionStatus/:id/:s', function (req, res) {
     var stat;
     let sql ;
-    if (req.params.s == 1)
+    var id = req.params.id;
+    var s = req.params.s;
+    // console.log(s);
+    if (s == 1)
     {
         stat = 0;
         sql = `UPDATE programsemestersectiontable SET IsActive=? WHERE ProgramSemesterSectionId=?;
         update alltimeslottable as ats
         join programsemestersectiontable as pss on ats.ProgramSemesterSection_Id = pss.ProgramSemesterSectionId
-        set ats.TimeSlotIsActive = stat
-        where pss.IsActive = stat;
-        `;
+        set ats.TimeSlotIsActive = 0
+        where pss.IsActive = 0;
+        `; 
+        // sql = `UPDATE programsemestersectiontable SET IsActive=? WHERE ProgramSemesterSectionId=?;`; 
+
     }
     else
     {
@@ -859,12 +870,15 @@ app.post('/setProgramSemSectionStatus/:id/:s', function (req, res) {
         sql = `UPDATE programsemestersectiontable SET IsActive=? WHERE ProgramSemesterSectionId=?;
         update alltimeslottable as ats
         join programsemestersectiontable as pss on ats.ProgramSemesterSection_Id = pss.ProgramSemesterSectionId
-        set ats.TimeSlotIsActive = stat
-        where pss.IsActive = stat;
-        `;
+        set ats.TimeSlotIsActive = 1
+        where pss.IsActive = 1;
+        `; 
+    
     }
-    connection.query(sql, [stat, req.params.id], (err, rows, fields) => {
+
+    connection.query(sql, [stat, id], (err, rows, fields) => {
         if (!err) {
+            // console.log ("success")
             res.send(rows)
         }
         else

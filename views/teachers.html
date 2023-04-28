@@ -96,14 +96,16 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Teacher Name</th>
+                    <th class="col-3">
+                        <input type="text" class="form-control" ng-model="searchTeacherName" placeholder="Search Teacher"> Teacher
+                    </th>
                     <th>Teacher Short Name</th>
                     <!-- <th>is Active</th> -->
                     <th>Active Status</th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="teacher in teachers">
+                <tr ng-repeat="teacher in teachers | filter : searchTeacherName">
                     <td>{{teacher.LecturerId}}</td>
                     <td>{{teacher.LecturerName}}</td>
                     <td>{{teacher.LecturerShortName}}</td>
