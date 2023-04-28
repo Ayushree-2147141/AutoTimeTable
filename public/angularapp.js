@@ -164,7 +164,20 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
                     // console.log(courses);
                     if (course) {
                         console.log(course);
-                        return course.CourseName + '-' + course.LecturerShortName;
+                        return course.CourseName;
+                    } else {
+                        return '';
+                    }
+                };
+                $scope.getTeacherName = function (courses, slot) {
+                    var parts = $scope.timeslots[0].split(":");
+                    var diff = parseInt(parts[0]) - 7;
+                    // console.log(diff);
+                    var course = courses[slot - 1 + diff];
+                    // console.log(courses);
+                    if (course) {
+                        // console.log(course);
+                        return course.LecturerShortName;
                     } else {
                         return '';
                     }

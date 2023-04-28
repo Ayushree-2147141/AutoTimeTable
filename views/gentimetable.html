@@ -81,7 +81,7 @@
           <tr ng-repeat-start="(day, courses) in MCA1A"></tr>
           <tr>
             <td>{{day}}</td>
-            <td ng-repeat="slot in slots">{{getCourseName(courses, slot)}}</td>
+            <td ng-repeat="slot in slots">{{getCourseName(courses, slot)}} <br> {{getTeacherName(courses, slot)}} </td>
           </tr>
           <tr ng-repeat-end></tr>
         </tbody>
