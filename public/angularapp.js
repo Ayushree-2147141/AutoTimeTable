@@ -163,7 +163,8 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
                     var course = courses[slot - 1 + diff];
                     // console.log(courses);
                     if (course) {
-                        return course.CourseName;
+                        console.log(course);
+                        return course.CourseName + '-' + course.LecturerShortName;
                     } else {
                         return '';
                     }
@@ -195,6 +196,7 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
             $scope.getCourseName = function (courses, day, slot) {
                 var course = courses[slot - 1];
                 if (course) {
+                    console.log(course);
                     return course.CourseName;
                 } else {
                     return '';
@@ -231,7 +233,8 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
                 $scope.getCourseName = function (courses, day, slot) {
                     var course = courses[slot - 1];
                     if (course) {
-                        return course.CourseName;
+                        console.log(course.ShortName);
+                        return course.CourseName + '<br>' + course.ShortName;
                     } else {
                         return '';
                     }
