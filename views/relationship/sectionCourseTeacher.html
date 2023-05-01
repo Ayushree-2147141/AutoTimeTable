@@ -65,7 +65,7 @@
                             <label for="selectSemester">Select Semesters</label>
                             <select ng-model="selectedSemester" name="selectedSemester" id="selectedSemester"
                                 ng-options="sem.SemesterId + ':'+ sem.ProgramSemesterId+ ':' + sem.SemesterTitle as sem.SemesterTitle for sem in activeprogramsemesters"
-                                ng-change="getActiveProgramSemsterCourse(selectedSemester)"></select>
+                                ng-change="getActiveProgramSemesterCourse(selectedSemester)"></select>
                         </div>
 
 

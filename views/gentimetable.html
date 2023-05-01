@@ -60,16 +60,26 @@
   <center>
     <h3>Generate Time table</h3>
     <div>
-      <button class="btn btn-primary" ng-click="generateAllTimeTable(); showContent1=true;">Generate Time table</button>
+      <button class="btn btn-primary" ng-click="showContent1=true; showContent2=false;">Student</button>
+      <button class="btn btn-primary" ng-click="showContent2=true; showContent1=false;">Teachers</button>
     </div>
-
+    
     <div class="mt-3" ng-show="showContent1">
       <select ng-model="selectedSectionId"
         ng-options="section.ProgramSemesterSectionId as section.ProgramSemesterSectionTitle for section in sections"></select>
-      <button class="btn btn-primary" ng-click="generateTimeTable(selectedSectionId); showContent=true;">Display Time
+      <button class="btn btn-primary" ng-click="generateTimeTable(selectedSectionId); showContent3=true; showContent4 = false;">Display Student Time
         table</button>
     </div>
-    <div ng-show="showContent" class="mt-3">
+    
+    <div class="mt-3" ng-show="showContent2">
+      <select ng-model="selectedTeacherId"
+        ng-options="teacher.LecturerID as teacher.LecturerName for teacher in teachers"></select>
+      <button class="btn btn-primary" ng-click="generateTeacherTimeTable(selectedTeacherId); showContent4=true; showContent3=false;">Display Teacher Time
+        table</button>
+    </div>
+    
+
+    <div ng-show="showContent3" class="mt-3">
       <table class="table" style="width:100%;">
         <thead>
           <tr>
@@ -87,6 +97,27 @@
         </tbody>
       </table>
     </div>
+
+    <div ng-show="showContent4" class="mt-3">
+      <h4 class="text-danger">{{selectedTeacherName}}</h4>
+      <table class="table" style="width:100%;">
+        <thead>
+          <tr>
+            <th>Time Slot</th>
+            <th ng-repeat="slot in timeslots">{{slot}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat-start="(day, teachers) in teachersSlot"></tr>
+          <tr>
+            <td>{{day}}</td>
+            <td ng-repeat="slot in slots">{{getCourseName(teachers, slot)}}</td>
+          </tr>
+          <tr ng-repeat-end></tr>
+        </tbody>
+      </table>
+    </div>
+
   </center>
 
   <br>

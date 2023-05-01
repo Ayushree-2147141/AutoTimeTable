@@ -186,6 +186,110 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
             })
     }
 
+    // var tId;
+    $scope.generateTeacherTimeTable = function (teacherId) {
+        // console.log(teacherId);
+        tId = teacherId;
+        // var sectionId = sectionId.ProgramSemesterSectionId;
+        $http.get('http://localhost:3000/getteachertimetable/' + teacherId)
+            .success(function (response) {
+                $scope.timeslots = [];
+                $scope.slots = [];
+                $scope.time = []
+                $scope.teachersSlot = {};
+
+
+                for (var i = 0; i < response.length; i++) {
+                    var teacher = response[i];
+                    if (!$scope.teachersSlot[teacher.DayName]) {
+                        $scope.teachersSlot[teacher.DayName] = [];
+                    }
+
+                    var Stime = response[i]['SlotStartTime'];
+                    var Etime = response[i]['SlotEndTime'];
+
+                    if (!$scope.time.includes(Stime)) {
+                        $scope.time.push(Stime);
+
+                    }
+
+                    if (!$scope.time.includes(Etime)) {
+
+                        $scope.time.push(Etime);
+
+                    }
+
+                    $scope.teachersSlot[teacher.DayName][teacher.TTTimeslotId - 1] = teacher;
+                }
+                $scope.time.sort()
+                // console.log($scope.time);
+
+                var currentSlot = $scope.time[0];
+                // console.log('Current time : ', currentSlot);
+
+                var endTime = $scope.time[$scope.time.length - 2];
+                // console.log('End time : ', endTime);
+
+                while (currentSlot < endTime) {
+                    var parts = currentSlot.split(":");
+                    var hour = parseInt(parts[0]);
+                    var nextHour = hour + 1;
+                    var nextHourString = nextHour < 10 ? '0' + nextHour : nextHour.toString();
+                    var nextSlot = nextHourString + ':' + parts[1];
+                    $scope.timeslots.push(currentSlot + '-' + nextSlot);
+                    currentSlot = nextSlot;
+                }
+
+                // console.log($scope.timeslots);
+                // console.log($scope.teachersSlot);
+
+
+                for (var i = 0; i < $scope.timeslots.length; i++) {
+                    $scope.slots.push((i + 1).toString());
+                }
+
+                // console.log($scope.slots);
+
+                $scope.getCourseName = function (courses, slot) {
+                    var parts = $scope.timeslots[0].split(":");
+                    var diff = parseInt(parts[0]) - 7;
+                    // console.log(diff);
+                    var course = courses[slot - 1 + diff];
+                    // console.log(courses);
+                    if (course) {
+                        // console.log(course);
+                        return course.CourseName;
+                    } else {
+                        return '';
+                    }
+                };
+
+                $scope.getTeacherName = function (teachers, slot) {
+                    var parts = $scope.timeslots[0].split(":");
+                    var diff = parseInt(parts[0]) - 7;
+                    // console.log(diff);
+                    var teacher = teachers[slot - 1 + diff];
+                    // console.log(courses);
+                    if (teacher) {
+                        // console.log(course);
+                        return teacher.LecturerShortName;
+                    } else {
+                        return '';
+                    }
+                };
+
+            })
+
+        $http.get('http://localhost:3000/getselectedTeacherName/'+teacherId)
+        .success(function(response){
+            $scope.selectedTeacherName = response[0].LecturerName;
+            // console.log($scope.selectedTeacher.LecturerName);
+        })
+    }
+
+    // console.log(tId);
+
+
 
     $scope.generateAllTimeTable = async function () {
         // alert('clicked');
@@ -221,8 +325,6 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
             console.error(error);
         }
     }
-
-
 
     $scope.generateMCATimeTable = function () {
         // alert('clicked')
@@ -298,6 +400,11 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
             })
 
     }
+
+    $http.get('http://localhost:3000/getactiveteachers')
+    .success(function (response) {
+        $scope.teachers = response;
+    })
 
     $http.get('http://localhost:3000/gettimetable')
         .success(function (response) {
@@ -545,16 +652,22 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
         })
     }
 
-    $scope.getActiveProgramSemsterCourse = function (semesterString) {
+    $scope.getActiveProgramSemesterCourse = function (semesterString) {
         // console.log(semesterString);
         // console.log(progId);
         var parts = semesterString.split(':')
         var semId = parts[0]
         var semName = parts[1]
+        console.log(semId);
 
         $http.get('http://localhost:3000/getprogramsemcourse/'+progId+'/'+semId)
         .then(function(response) {
             $scope.courses = response.data;
+        })
+
+        $http.get('http://localhost:3000/getactiveprogramsections/'+progId + '/' + semId)
+        .then(function(response) {
+            $scope.activeprogramsections = response.data;
         })
 
     }
@@ -591,6 +704,7 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
 
         var programSemesterSectionV = selectedSection.split(':'); 
         var programSemesterSectionId = programSemesterSectionV[1];
+        console.log('PSSId :',programSemesterSectionId);
 
         var selectedCourseV = selectedCourse.split(':');
         var programsemestercourseId = selectedCourseV[2];
@@ -598,29 +712,29 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
         var selectedTeacherV = selectedTeacher.split(':');
         var LecturerId = selectedTeacherV[0];
 
-        form = {
-            programSemesterId: programSemesterId,
-            programSemesterSectionId : programSemesterSectionId,
-            programsemestercourseId : programsemestercourseId,
-            LecturerId : LecturerId,
-            roomTypeId : roomTypeId
-        }
-        // console.log(selectedProgram,selectedSemester,selectedSection,selectedCourse,roomId,selectedTeacher);
-        console.log(form);
-        // console.log(roomNumber);
+        // form = {
+        //     programSemesterId: programSemesterId,
+        //     programSemesterSectionId : programSemesterSectionId,
+        //     programsemestercourseId : programsemestercourseId,
+        //     LecturerId : LecturerId,
+        //     roomTypeId : roomTypeId
+        // }
+        // // console.log(selectedProgram,selectedSemester,selectedSection,selectedCourse,roomId,selectedTeacher);
+        // console.log(form);
+        // // console.log(roomNumber);
 
-        $http({
-            withCredentials: false,
-            method: 'POST',
-            url: 'http://localhost:3000/addprogramsemseccourseteacher',
-            headers: { 'Content-Type': 'application/json' },
-            data: JSON.stringify(form)
-        }).then(function(response) {
-            // Reload the page after the data is submitted
-            $window.location.reload();
-        }).catch(function(error) {
-            console.log(error);
-        });
+        // $http({
+        //     withCredentials: false,
+        //     method: 'POST',
+        //     url: 'http://localhost:3000/addprogramsemseccourseteacher',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     data: JSON.stringify(form)
+        // }).then(function(response) {
+        //     // Reload the page after the data is submitted
+        //     $window.location.reload();
+        // }).catch(function(error) {
+        //     console.log(error);
+        // });
     }
     
 })
