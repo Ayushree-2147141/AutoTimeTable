@@ -127,6 +127,30 @@ app.get('/gettimetable/:id', function (req, res) {
     })
 })
 
+app.get('/getteachertimetable/:id', function (req, res) {
+    var id = req.params.id;
+    let sql = `select timetabletable.TTDayId, timetabletable.TTTimeslotId, timetabletable.TTProgramSemesterSectionTitle, timetabletable.CourseName, timetabletable.TTLecturerId, lecturertable.LecturerName , daytable.DayName, timeslottable.SlotStartTime, timeslottable.SlotEndTime
+    from timetabletable 
+    join lecturertable on timetabletable.TTLecturerId = lecturertable.LecturerId
+    join daytable on daytable.DayId = timetabletable.TTDayId
+    join timeslottable on timeslottable.TimeSlotId = timetabletable.TTTimeslotId
+    where TTLecturerId = ${id}
+    order by timetabletable.TTDayId;`;
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        res.send(result);
+    })
+})
+
+app.get('/getselectedTeacherName/:id', function (req, res) {
+    var id = req.params.id;
+    let sql = `select * from lecturertable where LecturerId = ${id};`;
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        res.send(result);
+    })
+})
+
 app.get('/gettimetableMCA1B', function (req, res) {
     let sql = `select * from timetabletable where RoomName = 'MCA1B'`;
     connection.query(sql, function (err, result) {
@@ -460,6 +484,25 @@ group by sectiontable.SectionName;`;
         res.send(result);
     })
 
+})
+
+app.get('/getactiveprogramsections/:id/:semid', function (req, res) {
+    let pid = req.params.id;
+    let sid = req.params.semid;
+
+    let sql = `select distinct sectiontable.SectionName, programsemestersectiontable.ProgramSemesterSectionId, programsemestersectiontable.ProgramSemesterSectionTitle, programsemestersectiontable.Program_Id , sectiontable.SectionId, programsemestersectiontable.RoomId, programsemestersectiontable.IsActive, programsemestertable.ProgramId
+    from programsemestersectiontable
+    join sectiontable on programsemestersectiontable.SectionId1 = sectiontable.SectionId
+    join programsemestertable on programsemestertable.ProgramSemesterId = programsemestersectiontable.ProgramSemesterId
+    where programsemestersectiontable.Program_Id = ${pid}
+    and programsemestertable.SemesterId = ${sid}
+    and programsemestersectiontable.IsActive = 1;`;
+
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        // console.log(result);
+        res.send(result);
+    })  
 })
 
 app.get('/getprogramsemcourse/:progId/:semId', function (req, res) {
