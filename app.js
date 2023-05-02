@@ -66,6 +66,10 @@ app.get('/sectioncourseteacher', function (req, res) {
     res.sendFile(__dirname + '/views/relationship/sectionCourseTeacher.html')
 })
 
+app.get('/electivecourses', function (req, res) {
+    res.sendFile(__dirname + '/views/relationship/electiveDetails.html')
+})
+
 app.get('/getprogram', function (req, res) {
     let sql = 'select * from programtable';
     connection.query(sql, function (err, result) {
@@ -183,14 +187,7 @@ app.get('/getsemesters', function (req, res) {
     })
 })
 
-app.get('/getrooms', function (req, res) {
-    let sql = 'select * from roomtable';
-    connection.query(sql, function (err, result) {
-        if (err) throw err;
-        // console.log(result);
-        res.send(result);
-    })
-})
+
 
 app.get('/getcourses', function (req, res) {
     let sql = 'select * from coursetable';
@@ -410,7 +407,7 @@ app.get('/getprogramsemcourses', function (req, res) {
 })
 
 app.get('/getrooms', function (req, res) {
-    let sql = `select * from roomtable`;
+    let sql = `select * from roomtable where RoomIsActive = 1;`;
     connection.query(sql, function (err, result) {
         if (err) throw err;
         // console.log(result);
@@ -419,7 +416,7 @@ app.get('/getrooms', function (req, res) {
 })
 
 app.get('/getlabs', function (req, res) {
-    let sql = `select * from labtable`;
+    let sql = `select * from labtable where IsActive = 1;`;
     connection.query(sql, function (err, result) {
         if (err) throw err;
         // console.log(result);
@@ -673,6 +670,63 @@ app.post('/addprogramsemseccourseteacher', function (req, res) {
         res.sendFile(__dirname + '/views/relationship/sectionCourseTeacher.html')
     })
 
+
+})
+
+app.post('/addelectives', function (req, res) {
+    // console.log(req.body);
+
+    var selectedProgram = req.body.selectedProgram;
+    var selectedSemester = req.body.selectedSemester;
+
+    var programPart = selectedProgram.split(':')
+    var semesterPart = selectedSemester.split(':')
+
+    var programId = programPart[1];
+    var programName = programPart[2];
+
+    var semesterId = semesterPart[1];
+    var semesterName = semesterPart[2];
+
+    var electiveGroupId = req.body.electiveGroupId;
+    var electiveGroupName = req.body.electiveGroupName;
+    var selectedElectiveGroupCourseList = req.body.selectedElectiveGroupCourses;
+
+    var part = selectedElectiveGroupCourseList.split(':')
+    var electiveGroupCourseId = part[1];
+    var electiveGroupCourseName = part[2];
+
+    var selectedElectiveTeacher = req.body.selectedElectiveTeacher;
+    var selectedElectiveTeacherPart = selectedElectiveTeacher.split(':');
+
+    var electiveTeacherId = selectedElectiveTeacherPart[1];
+    var electiveTeacherName = selectedElectiveTeacherPart[2];
+
+    var electiveRoomType = req.body.selectedElectiveRoomType;
+
+    var selectedVenue = req.body.selectedVenue;
+
+    var selectedVenuePart = selectedVenue.split(':');
+    var venueId = selectedVenuePart[1];
+    var venueName = selectedVenuePart[2];
+
+    var courseHrs = req.body.selectedCourseHours;
+
+   
+    // console.log('Program id :', programId);
+    // console.log('Program Name : ', programName);
+    // console.log('Semester Id : ', semesterId);
+    // console.log('Semester Name : ', semesterName);
+    // console.log('elective group id : ', electiveGroupId);
+    // console.log('Group name : ', electiveGroupName);
+    // console.log('Id: ', electiveGroupCourseId);
+    // console.log('Elective course Name : ', electiveGroupCourseName);
+    // console.log('Teacher id :', electiveTeacherId);
+    // console.log('Teacher Name : ', electiveTeacherName);
+    // console.log('Room type : ', electiveRoomType);
+    // console.log('Venue id : ', venueId);
+    // console.log('Venue Name : ', venueName);
+    // console.log('Course hrs : ', courseHrs); 
 
 })
 
