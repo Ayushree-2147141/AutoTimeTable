@@ -739,6 +739,49 @@ sectioncourseteacherapp.controller('sectioncourseteacherctrl', function ($scope,
     
 })
 
+var electivedetailsapp = angular.module('electivedetailsapp',[])
+electivedetailsapp.controller('electivedetailsctrl', function($scope, $http){
+    $http.get('http://localhost:3000/getactivecourse')
+    .success(function(response){
+        $scope.courses = response;
+    })
+
+    $http.get('http://localhost:3000/getactiveteachers')
+        .success(function (response) {
+            $scope.activeteachers = response;
+        })
+
+    $http.get('http://localhost:3000/getactiveprograms')
+        .success(function (response) {
+            $scope.programs = response;
+        })
+
+        $scope.getActiveProgramSemesters = function (programString) {
+            // console.log(programId);
+            var parts = programString.split(':')
+            var programName = parts[1];
+            var programId = parts[0];
+    
+            $http.get('http://localhost:3000/getactiveprogramsemesters/' + programId)
+                .then(function (response) {
+                    $scope.activeprogramsemesters = response.data;
+                    console.log($scope.activeprogramsemesters);
+                });
+        }
+    
+        $http.get('http://localhost:3000/getrooms')
+        .success(function (response) {
+            $scope.rooms = response;
+        })
+
+        $http.get('http://localhost:3000/getlabs')
+        .success(function (response) {
+            $scope.labs = response;
+        })
+
+
+})
+
 var programtimeslotapp = angular.module('programtimeslotapp', [])
 programtimeslotapp.controller('programtimeslotctrl', function ($scope, $http) {
     $http.get('http://localhost:3000/getactiveprograms')
