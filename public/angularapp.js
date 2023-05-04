@@ -289,7 +289,7 @@ timetableapp.controller('timetablectrl', function ($scope, $http) {
 
     // console.log(tId);
 
-
+   
 
     $scope.generateAllTimeTable = async function () {
         // alert('clicked');
